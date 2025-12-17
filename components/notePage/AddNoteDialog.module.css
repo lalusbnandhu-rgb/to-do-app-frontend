@@ -1,0 +1,128 @@
+/* Overlay: dull white + blur */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  /* "Shady white" – soft grey-white tint */
+  background: rgba(200, 200, 200, 0.85); /* increase alpha for darker shade */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+
+/* Modal Box: bright white card */
+.modal {
+  width: 360px;
+  padding: 24px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #ffffff;          /* solid bright white */
+  border: 1px solid #e5e5e5;    /* subtle border so it stands out */
+  color: #171717;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); /* extra focus */
+}
+
+
+/* Title */
+.modalTitle {
+  text-align: center;
+  font-weight: 600;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #171717;  /* Dark text for light theme */
+}
+
+/* Input */
+.modalInput {
+  width: 100%;
+  height: 40px;
+  padding: 10px 1px;
+  border-radius: 6px;
+  border: 1px solid #6363ff;
+  outline: none;
+  font-size: 14px;
+  background-color: #f9f9f9;  /* Light mode background */
+  color: #171717;             /* Dark text for light mode */
+}
+
+.modalInput:focus {
+  border-color: #6c63ff;
+}
+
+/* Buttons */
+.modalActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 24px;
+}
+
+.btnCancel {
+  background: transparent;
+  border: 1px solid #6c63ff;
+  color: #6c63ff;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btnApply {
+  background: #6c63ff;
+  border: none;
+  color: white;
+  padding: 6px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btnApply:hover {
+  background: #5952e0;
+}
+.dark .modalOverlay,
+:global(html.dark) .modalOverlay {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+.dark .modal,
+:global(html.dark) .modal {
+  background: #171717;          /* dark card */
+  border: 1px solid #333333;
+  color: #f5f5f5;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.dark .modalTitle,
+:global(html.dark) .modalTitle {
+  color: #f5f5f5;
+}
+
+.dark .modalInput,
+:global(html.dark) .modalInput {
+  background-color: #262626;
+  color: #f5f5f5;
+  border: 1px solid #8b8bff;
+}
+
+.dark .modalInput::placeholder {
+  color: #a3a3a3;
+}
+
+.dark .btnCancel,
+body.dark .btnCancel {
+  background: transparent;
+  border: 1px solid #8b8bff;
+  color: #c7c7ff;
+}
+
+.dark .btnApply,
+body.dark .btnApply {
+  background: #8b8bff;
+  color: #0b0b0b;
+}
+
+.dark .btnApply:hover,
+body.dark .btnApply:hover {
+  background: #706fe6;
+}

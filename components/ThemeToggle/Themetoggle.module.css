@@ -1,0 +1,13 @@
+.btnPrimary {
+    justify-content: center;
+    height: 30px;
+    padding: 0 8px;
+    margin-top:2px;
+    border-radius: 4px;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+
+
+
+}

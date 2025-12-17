@@ -1,0 +1,9 @@
+.headerContainer{
+  background: #3b82f6;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  font-weight: bold;
+}
+
+
