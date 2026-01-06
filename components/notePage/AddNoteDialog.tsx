@@ -40,11 +40,12 @@ export default function AddNoteDialog({
           {initialTitle ? "EDIT NOTE" : "NEW NOTE"}
         </h3>
 
-        <input
+        <textarea
           className={styles.modalInput}
           placeholder="Input your note..."
           value={value}
           onChange={(e) => setValue(e.target.value)}
+          rows={4}
         />
 
         <div className={styles.modalActions}>

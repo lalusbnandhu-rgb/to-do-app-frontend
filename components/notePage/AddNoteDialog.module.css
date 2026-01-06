@@ -30,7 +30,7 @@
 .modalTitle {
   text-align: center;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom:2px;
   font-size: 18px;
   color: #171717;  /* Dark text for light theme */
 }
@@ -45,7 +45,10 @@
   outline: none;
   font-size: 14px;
   background-color: #f9f9f9;  /* Light mode background */
-  color: #171717;             /* Dark text for light mode */
+  resize: vertical;          /* allow user to resize if they want */
+  white-space: pre-wrap;     /* preserve line breaks, wrap text */
+  overflow-wrap: break-word; /* break very long words */
+  word-break: break-word;
 }
 
 .modalInput:focus {
@@ -56,7 +59,7 @@
 .modalActions {
   display: flex;
   justify-content: space-between;
-  margin-top: 24px;
+  margin-top: 80px;
 }
 
 .btnCancel {

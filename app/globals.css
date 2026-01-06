@@ -1,16 +1,20 @@
   @tailwind utilities;
 
   /* Custom header styles */
-  .header {
-    display: flex;
-    justify-content: center;
-    font-weight: bold;
-  }
+ .header {
+  display: flex;
+  justify-content: center; /* center horizontally */
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.header h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;        /* bold */
+}
 
   .sub-header {
-    /* font-size: 10px;
-  color: #3b82f6;
-  font-weight: bold; */
     margin-top: 10px;
     display: flex;
     align-items: center;
@@ -61,6 +65,8 @@
     justify-content: space-between;
     padding: 12px 4px;
     border-bottom: 1px solid #374151;
+    /* overflow: hidden;
+    text-overflow: ellipsis */
   }
 
   .todoLeft {
@@ -72,8 +78,7 @@
 
   .todoActions {
     display: flex;
-    /* align-items: center; */
-    gap: 10px;
+    gap: 8px;
   }
 
   .todoIcon {
@@ -109,4 +114,107 @@
     /* optional – looks like Figma */
     text-decoration-color: currentColor;
     opacity: 0.6;
-  }
+    flex: 1;
+    }
+
+    .emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  color: #9ca3af;
+}
+
+.emptyStateImage {
+  max-width: 260px;
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.emptyStateText {
+  font-size: 14px;
+}
+
+.loginContainer {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginCard {
+  background: #0f172a;
+  padding: 32px 28px;
+  border-radius: 12px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.loginTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.loginLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  color: #9ca3af;
+}
+
+.loginInput {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: #020617;
+  color: #e5e7eb;
+}
+
+.loginButton {
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: none;
+  background: #6366f1;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.loginError {
+  color: #f97373;
+  font-size: 13px;
+}
+
+.loginSwitchText {
+  font-size: 13px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.loginSwitchLink {
+  border: none;
+  background: none;
+  color: #6366f1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+
+.logoutButton {
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid #4b5563;
+  background: transparent;
+  color: #e5e7eb;
+  cursor: pointer;
+}
+
+

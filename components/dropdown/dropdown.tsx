@@ -1,30 +1,30 @@
 "use client";
-import { useState, ChangeEvent, FC } from 'react';
-import styles from "./dropdown.module.css"
+import { ChangeEvent, FC } from "react";
+import styles from "./dropdown.module.css";
 
-const Dropdown: FC = () => {
-    const [status, setStatus] = useState<string>('');
+type DropdownProps = {
+  value: "all" | "todo" | "done";
+  onChange: (value: "all" | "todo" | "done") => void;
+};
 
-    const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
-        setStatus(e.target.value);
-    };
+const Dropdown: FC<DropdownProps> = ({ value, onChange }) => {
+  const handleChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    onChange(e.target.value as "all" | "todo" | "done");
+  };
 
-    return (
-
-        <div className = {styles.dropdownContainer}>
-            <select
-                id="status"
-                value={status}
-                onChange={handleChange}
-                className= {styles.statuSelect}
-            >
-                <option value="todo">All</option>
-                <option value="in-progress">Todo</option>
-                <option value="done">Done</option>
-            </select>
-        </div>
-    );
+  return (
+    <div className={styles.dropdownContainer}>
+      <select
+        value={value}
+        onChange={handleChange}
+        className={styles.statuSelect}
+      >
+        <option value="all">All</option>
+        <option value="todo">Incomplete</option>
+        <option value="done">Complete</option>
+      </select>
+    </div>
+  );
 };
 
 export default Dropdown;
-
