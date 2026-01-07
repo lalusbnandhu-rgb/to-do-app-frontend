@@ -10,37 +10,57 @@ import ThemeToggle from "@/components/ThemeToggle/Themetoggle";
 import AddNoteDialog from "@/components/notePage/AddNoteDialog";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { MdOutlineEdit } from "react-icons/md";
+import { useLogin } from "@/components/Auth/useLogin";
+import { useRegister } from "@/components/Auth/useRegister";
 
 type Note = {
-  id: string;      // 🔹 add id from MongoDB
+  id: string;
   title: string;
   done: boolean;
 };
 
-type StoredUser = {
-  email: string;
-  password: string;
-};
+//how much of the note’s words is displayed in the UI
+const MAX_TITLE_PREVIEW = 50;
 
-const MAX_TITLE_PREVIEW = 80;
-
-// 🔹 frontend → backend base URL
+// Use API base from .env (NEXT_PUBLIC_API_BASE), or default to localhost:4000 if it's not set
 const API_BASE =
   process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:4000";
 
 export default function Home() {
   const router = useRouter();
 
-  // auth state
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [authReady, setAuthReady] = useState(false);
+  // simple auth UI state
   const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [authReady] = useState(true);
 
-  // shared auth fields
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [authError, setAuthError] = useState("");
+  //User login 
+  const {
+    isLoggedIn,
+    userName,
+    email,
+    password,
+    authError: loginError,
+    setEmail,
+    setPassword,
+    setAuthError: setLoginError,
+    handleLoginSubmit,
+    handleLogout,
+  } = useLogin();
+
+  // User registertion
+  const {
+    username,
+    regEmail,
+    regPassword,
+    confirmPassword,
+    authError: registerError,
+    setUsername,
+    setRegEmail,
+    setRegPassword,
+    setConfirmPassword,
+    setAuthError: setRegisterError,
+    handleRegisterSubmit,
+  } = useRegister();
 
   // todo state
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -48,19 +68,21 @@ export default function Home() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [filter, setFilter] = useState<"all" | "todo" | "done">("all");
   const [searchText, setSearchText] = useState("");
-  const [userName, setUserName] = useState("");
 
-  // 🔹 load todos from backend
   const fetchTodos = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/todos`);
-      if (!res.ok) {
-        console.error("Failed to fetch todos");
-        return;
-      }
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${API_BASE}/api/todos`,
+        {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : "",
+          },
+        });
+
+      if (!res.ok) return;
       const data = await res.json();
       const mapped: Note[] = data.map((t: any) => ({
-        id: t._id,                               // 🔹 keep Mongo _id
+        id: t._id,
         title: t.title,
         done: t.completed ?? t.done ?? false,
       }));
@@ -70,100 +92,20 @@ export default function Home() {
     }
   };
 
-  // ---- AUTH INIT ----
   useEffect(() => {
-    const loggedIn =
-      typeof window !== "undefined" &&
-      localStorage.getItem("todo_logged_in") === "true";
-    setIsLoggedIn(loggedIn);
-    setAuthReady(true);
-
-    if (loggedIn) {
-      setUserName(localStorage.getItem("todo_username") ?? ""); // 🔹 load name
+    if (isLoggedIn) {
       fetchTodos();
     }
-  }, []);
+  }, [isLoggedIn]);
 
+  // ---- TODO handlers ----
 
-  const getStoredUser = (): StoredUser | null => {
-    if (typeof window === "undefined") return null;
-    const raw = localStorage.getItem("todo_user");
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as StoredUser;
-    } catch {
-      return null;
-    }
-  };
-
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    if (!email || !password) {
-      setAuthError("Email and password are required.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setAuthError("Passwords do not match.");
-      return;
-    }
-
-    const newUser: StoredUser = { email, password };
-    localStorage.setItem("todo_user", JSON.stringify(newUser));
-    localStorage.setItem("todo_logged_in", "true");
-
-    setIsLoggedIn(true);
-    setEmail("");
-    setPassword("");
-    setConfirmPassword("");
-    setAuthMode("login");
-
-    // optional: load todos right after registering if you want
-    fetchTodos();
-  };
-
-  const handleLoginSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setAuthError("");
-
-    const user = getStoredUser();
-    if (!user) {
-      setAuthError("No account found. Please register first.");
-      setAuthMode("register");
-      return;
-    }
-
-    if (user.email === email && user.password === password) {
-      localStorage.setItem("todo_logged_in", "true");
-      localStorage.setItem("todo_username", user.email); // persist name
-      setIsLoggedIn(true);
-      setEmail("");
-      setPassword("");
-      // 🔹 load todos after successful login
-      fetchTodos();
-    } else {
-      setAuthError("Invalid email or password.");
-    }
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("todo_logged_in");
-    setIsLoggedIn(false);
-    setNotes([]);
-    setFilter("all");       // 🔹 reset dropdown
-    setSearchText("");
-  };
-
-  // ---- TODO DERIVED STATE ----
   const filteredNotes = notes.filter(note => {
     if (filter === "done" && !note.done) return false;
     if (filter === "todo" && note.done) return false;
-
     if (searchText) {
       return note.title.toLowerCase().includes(searchText.toLowerCase());
     }
-
     return true;
   });
 
@@ -173,15 +115,13 @@ export default function Home() {
         i === index ? { ...note, done: !note.done } : note
       )
     );
-    // optional: also PATCH to backend later
   };
 
-  // 🔹 UPDATED: save to backend, then update state
+  // Save new or edited note
   const handleSaveNote = async (title: string) => {
     const trimmed = title.trim();
     if (!trimmed) return;
 
-    // editing: still local-only for now
     if (editingIndex !== null) {
       setNotes(prev =>
         prev.map((note, i) =>
@@ -194,14 +134,20 @@ export default function Home() {
     }
 
     try {
+      const token = localStorage.getItem("token");
+
       const res = await fetch(`${API_BASE}/api/todos`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token ? `Bearer ${token}` : "",
+        },
         body: JSON.stringify({ title: trimmed }),
       });
 
       if (!res.ok) {
-        console.error("Failed to save todo");
+        const errBody = await res.json().catch(() => null);
+        console.error("Failed to save todo", res.status, errBody);
         return;
       }
 
@@ -209,7 +155,7 @@ export default function Home() {
       setNotes(prev => [
         ...prev,
         {
-          id: created._id,                          // 🔹 use backend id
+          id: created._id,
           title: created.title ?? trimmed,
           done: created.completed ?? created.done ?? false,
         },
@@ -222,23 +168,30 @@ export default function Home() {
     }
   };
 
-  // 🔹 NEW: delete from backend, then from state
-  const handleDeleteNote = async (id: string) => {
-    try {
-      const res = await fetch(`${API_BASE}/api/todos/${id}`, {
-        method: "DELETE",
-      });
+// Delete note
+ const handleDeleteNote = async (id: string) => {
+  try {
+    const token = localStorage.getItem("token");
 
-      if (!res.ok) {
-        console.error("Failed to delete todo");
-        return;
-      }
+    const res = await fetch(`${API_BASE}/api/todos/${id}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: token ? `Bearer ${token}` : "",
+      },
+    });
 
-      setNotes(prev => prev.filter(note => note.id !== id));
-    } catch (err) {
-      console.error("Error deleting todo", err);
+    if (!res.ok) {
+      const errBody = await res.json().catch(() => null);
+      console.error("Failed to delete todo", res.status, errBody);
+      return;
     }
-  };
+
+    setNotes(prev => prev.filter(note => note.id !== id));
+  } catch (err) {
+    console.error("Error deleting todo", err);
+  }
+};
+
 
   const startCreate = () => {
     setEditingIndex(null);
@@ -260,33 +213,61 @@ export default function Home() {
     return title.slice(0, MAX_TITLE_PREVIEW) + "...";
   };
 
-  if (!authReady) {
-    return null;
-  }
+  if (!authReady) return null;
 
-  // ---------- AUTH VIEW (LOGIN / REGISTER) ----------
+  // ---------- AUTH VIEW ----------
   if (!isLoggedIn) {
     const isLogin = authMode === "login";
+    const error = isLogin ? loginError : registerError;
 
     return (
       <main className="loginContainer">
         <form
           className="loginCard"
-          onSubmit={isLogin ? handleLoginSubmit : handleRegisterSubmit}
+          onSubmit={async e => {
+            if (isLogin) {
+              await handleLoginSubmit(e);
+            } else {
+              await handleRegisterSubmit(e);
+
+              // if register had no error, switch to login mode
+              if (!registerError) {
+                setAuthMode("login");
+              }
+            }
+          }}
         >
+
           <h1 className="loginTitle">
             {isLogin ? "Sign in" : "Create account"}
           </h1>
 
-          {authError && <p className="loginError">{authError}</p>}
+          {error && <p className="loginError">{error}</p>}
+
+          {!isLogin && (
+            <label className="loginLabel">
+              Username
+              <input
+                className="loginInput"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                required
+              />
+            </label>
+          )}
 
           <label className="loginLabel">
             Email
             <input
               className="loginInput"
               type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={isLogin ? email : regEmail}
+              onChange={e =>
+                isLogin
+                  ? setEmail(e.target.value)
+                  : setRegEmail(e.target.value)
+              }
               required
             />
           </label>
@@ -296,8 +277,12 @@ export default function Home() {
             <input
               className="loginInput"
               type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
+              value={isLogin ? password : regPassword}
+              onChange={e =>
+                isLogin
+                  ? setPassword(e.target.value)
+                  : setRegPassword(e.target.value)
+              }
               required
             />
           </label>
@@ -325,8 +310,13 @@ export default function Home() {
               type="button"
               className="loginSwitchLink"
               onClick={() => {
-                setAuthMode(isLogin ? "register" : "login");
-                setAuthError("");
+                if (isLogin) {
+                  setAuthMode("register");
+                  setLoginError("");
+                } else {
+                  setAuthMode("login");
+                  setRegisterError("");
+                }
               }}
             >
               {isLogin ? "Create an account" : "Log in"}
@@ -337,10 +327,12 @@ export default function Home() {
     );
   }
 
+
   // ---------- TODO APP VIEW ----------
   return (
     <div>
-      <Header onLogout={handleLogout} userEmail={email} />
+      <Header onLogout={handleLogout} userEmail={userName} />
+
       <div className="header">
         <h3>TODO LIST</h3>
       </div>
@@ -373,7 +365,7 @@ export default function Home() {
           <ul className="checklist">
             {filteredNotes.map((note, index) => (
               <li
-                key={note.id}   // 🔹 stable key
+                key={note.id}
                 className={`todoItem ${note.done ? "todoItem--done" : ""}`}
               >
                 <div className="todoLeft">
@@ -408,6 +400,7 @@ export default function Home() {
         )}
       </div>
 
+      {/*----------rendering your details for add/edit note dialog ----------  */}
       <AddNoteDialog
         isOpen={isDialogOpen}
         initialTitle={
@@ -417,6 +410,7 @@ export default function Home() {
         onApply={handleSaveNote}
       />
 
+      {/* //--------footer with add button ----------   */}
       <Footer onAddClick={startCreate} />
     </div>
   );
